@@ -1,18 +1,25 @@
 package com.example.app.service;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.List;
+
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
-import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import org.springframework.stereotype.Service;
 
 @Service
 public class FirebaseService {
+
+    private static final String COLLECTION_PRODUCTS = "products";
 
     private Firestore getFirestore() {
         return FirestoreClient.getFirestore();
@@ -23,10 +30,8 @@ public class FirebaseService {
         ApiFuture<WriteResult> future;
         
         if (id != null) {
-            // Si hay un ID específico, usarlo
             future = getFirestore().collection(collection).document(id).set(data);
         } else {
-            // Si no hay ID, dejar que Firestore genere uno
             future = getFirestore().collection(collection).document().set(data);
         }
         
@@ -44,5 +49,44 @@ public class FirebaseService {
         } else {
             return null;
         }
+    }
+
+    // Métodos para gestión de productos
+    
+    // Guardar un producto
+    public String saveProduct(Map<String, Object> product) throws ExecutionException, InterruptedException {
+        String id = (String) product.get("id");
+        if (id == null || id.isEmpty()) {
+            // Generar ID aleatorio si no existe
+            id = getFirestore().collection(COLLECTION_PRODUCTS).document().getId();
+            product.put("id", id);
+        }
+        
+        WriteResult result = getFirestore().collection(COLLECTION_PRODUCTS).document(id).set(product).get();
+        return result.getUpdateTime().toString();
+    }
+    
+    // Obtener todos los productos
+    public List<Map<String, Object>> getAllProducts() throws ExecutionException, InterruptedException {
+        List<Map<String, Object>> products = new ArrayList<>();
+        ApiFuture<QuerySnapshot> future = getFirestore().collection(COLLECTION_PRODUCTS).get();
+        
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        for (QueryDocumentSnapshot document : documents) {
+            products.add(document.getData());
+        }
+        
+        return products;
+    }
+    
+    // Actualizar un producto
+    public String updateProduct(String id, Map<String, Object> updates) throws ExecutionException, InterruptedException {
+        WriteResult result = getFirestore().collection(COLLECTION_PRODUCTS).document(id).update(updates).get();
+        return result.getUpdateTime().toString();
+    }
+    
+    // Eliminar un producto
+    public void deleteProduct(String id) throws ExecutionException, InterruptedException {
+        getFirestore().collection(COLLECTION_PRODUCTS).document(id).delete().get();
     }
 }

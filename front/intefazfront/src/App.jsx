@@ -1,18 +1,10 @@
-//Router:	Envuelve la aplicación y gestiona la navegación.
-//Routes:	Agrupa múltiples rutas y muestra solo la primera coincidencia.
-//Route:	Define una URL específica y qué componente renderizar.
-
-//Instala lo siguiente
-//npm install sockjs-client stompjs
-
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./pages/Navbar/Navbar";
 import Default from "./pages/mainPages/Default";
 import Home from "./pages/mainpages/Home";
 import About from "./pages/mainpages/About";
 import Dashbord from "./pages/mainpages/Dashbord";
-
+import Products from "./pages/mainpages/Products";
 
 function App() {
   return (
@@ -26,6 +18,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/dashbord" element={<Dashbord />} />
+            <Route path="/products" element={<Products />} />
             <Route path="*" element={<Default />} />
           </Routes>
         </div>
